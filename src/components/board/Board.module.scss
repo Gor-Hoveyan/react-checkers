@@ -1,0 +1,41 @@
+.table {
+  width: 400px;
+  height: 400px;
+}
+.cell {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.row {
+  display: flex;
+}
+.blackCell {
+  background: rgb(122, 58, 12);
+}
+.whiteCell {
+  background: rgb(194, 131, 87);
+}
+.checker {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid gray;
+}
+.blackChecker {
+  background-color: black;
+}
+.whiteChecker {
+  background-color: white;
+}
+.checkerLine {
+  width: 20px;
+  height: 20px;
+  border: 1px solid gray;
+  border-radius: 50%;
+}
