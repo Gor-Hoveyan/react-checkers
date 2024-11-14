@@ -1,6 +1,8 @@
 import styles from "./Board.module.scss";
 import useGameStore from "../../stores/gameStore";
 import { useEffect } from "react";
+import Checker from "../checker/Checker";
+import { Checker as CheckerType } from "../../types/checker";
 
 export default function Board() {
   const board = useGameStore((state) => state.board);
@@ -10,7 +12,7 @@ export default function Board() {
     startGame();
   }, []);
 
-  function findChecker(row: number, cell: number) {
+  function findChecker(row: number, cell: number): CheckerType | undefined {
     return checkers.find(
       (checker) =>
         checker.coordinats.row === row && checker.coordinats.cell === cell
@@ -31,15 +33,7 @@ export default function Board() {
                       key={cellIndex}
                     >
                       {findChecker(rowIndex, cellIndex) ? (
-                        <span
-                          className={`${styles.checker} ${
-                            findChecker(rowIndex, cellIndex)?.color === "black"
-                              ? styles.blackChecker
-                              : styles.whiteChecker
-                          }`}
-                        >
-                          <span className={styles.checkerLine}></span>
-                        </span>
+                        <Checker checker={findChecker(rowIndex, cellIndex)} />
                       ) : (
                         ""
                       )}

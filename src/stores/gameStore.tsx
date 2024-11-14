@@ -14,6 +14,7 @@ interface IStore {
   handleIsOngoing: (isOngoing: boolean) => void;
   handleTurn: (turn: "white" | "black" | null) => void;
   startGame: () => void;
+  handleMove: (id: number, top: number, left: number) => void;
 }
 
 const useGameStore = create<IStore>()(
@@ -55,6 +56,7 @@ const useGameStore = create<IStore>()(
             if (get().board[row][cell] === "black") {
               const checker: Checker = {
                 color: "black",
+                id: Math.floor(Math.random() * 100000),
                 isQueen: false,
                 coordinats: {
                   row: row,
@@ -70,6 +72,7 @@ const useGameStore = create<IStore>()(
             if (get().board[row][cell] === "black") {
               const checker: Checker = {
                 color: "white",
+                id: Math.floor(Math.random() * 100000),
                 isQueen: false,
                 coordinats: {
                   row: row,
@@ -80,6 +83,29 @@ const useGameStore = create<IStore>()(
             }
           }
         }
+      },
+      handleMove: (id, top, left) => {
+        const res = structuredClone(get().checkers);
+        const checker = res.find((checker) => checker.id === id);
+        if (checker && !checker.isQueen) {
+          if (
+            ((Math.round(top / 50) === 1 && checker.color === "white") ||
+              (Math.round(top / 50) === -1 && checker.color === "black")) &&
+            (Math.round(left / 50) === 1 || Math.round(left / 50) === -1)
+          ) {
+            if (checker.color === "white") {
+              checker.coordinats.row--;
+            } else if (checker.color === "black") {
+              checker.coordinats.row++;
+            }
+            if (Math.round(left / 50) === -1) {
+              checker.coordinats.cell++;
+            } else {
+              checker.coordinats.cell--;
+            }
+          }
+        }
+        set({ checkers: res });
       },
     }))
   )
