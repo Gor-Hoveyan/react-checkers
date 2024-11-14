@@ -94,18 +94,40 @@ const useGameStore = create<IStore>()(
             (Math.round(left / 50) === 1 || Math.round(left / 50) === -1)
           ) {
             if (checker.color === "white") {
-              checker.coordinats.row--;
+              if (
+                get().board[checker.coordinats.row - 1][checker.coordinats.cell]
+              ) {
+                checker.coordinats.row--;
+              }
             } else if (checker.color === "black") {
-              checker.coordinats.row++;
+              if (
+                get().board[checker.coordinats.row + 1][checker.coordinats.cell]
+              ) {
+                checker.coordinats.row++;
+              }
             }
             if (Math.round(left / 50) === -1) {
-              checker.coordinats.cell++;
+              if (
+                get().board[checker.coordinats.row][checker.coordinats.cell + 1]
+              ) {
+                checker.coordinats.cell++;
+              }
             } else {
-              checker.coordinats.cell--;
+              if (
+                get().board[checker.coordinats.row][checker.coordinats.cell - 1]
+              ) {
+                checker.coordinats.cell--;
+              }
             }
           }
         }
-        set({ checkers: res });
+        if (
+          checker &&
+          get().board[checker?.coordinats.row][checker?.coordinats.cell] ===
+            "black"
+        ) {
+          set({ checkers: res });
+        }
       },
     }))
   )
