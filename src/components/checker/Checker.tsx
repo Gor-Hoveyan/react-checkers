@@ -1,6 +1,8 @@
 import useGameStore from "../../stores/gameStore";
 import { Checker as CheckerType } from "../../types/checker";
 import styles from "./Checker.module.scss";
+import blackQueenUrl from "/src/assets/black-queen.svg?url";
+import whiteQueenUrl from "/src/assets/white-queen.svg?url";
 
 interface IProps {
   checker: CheckerType | undefined;
@@ -29,7 +31,23 @@ export default function Checker({ checker }: IProps) {
               : styles.whiteChecker
           }`}
         >
-          <span className={styles.checkerLine}></span>
+          {checker.isQueen ? (
+            checker.color === "black" ? (
+              <img
+                src={whiteQueenUrl}
+                alt="Black Queen"
+                className={styles.queenImg}
+              />
+            ) : (
+              <img
+                src={blackQueenUrl}
+                alt="Black Queen"
+                className={styles.queenImg}
+              />
+            )
+          ) : (
+            <span className={styles.checkerLine}></span>
+          )}
         </span>
       )}
     </>
