@@ -40,20 +40,23 @@ const useGameStore = create<IStore>()(
         for (let row = 0; row < 8; row++) {
           res[row] = [];
           for (let cell = 0; cell < 8; cell++) {
+            res[row][cell] = { isEmpty: true, color: "white" };
             if ((row + cell) % 2 === 1) {
-              res[row][cell] = "black";
-            } else {
-              res[row][cell] = "white";
+              res[row][cell].color = "black";
             }
           }
         }
         set({ board: res });
+        set({ turn: "white" });
 
-        // Creating Checkers
+        // Creating white Checkers
 
         for (let row = 0; row < 3; row++) {
           for (let cell = 0; cell < 8; cell++) {
-            if (get().board[row][cell] === "black") {
+            if (get().board[row][cell].color === "black") {
+              const boardClone = structuredClone(get().board);
+              boardClone[row][cell].isEmpty = false;
+              set({ board: boardClone });
               const checker: Checker = {
                 color: "black",
                 id: Math.floor(Math.random() * 100000),
@@ -67,9 +70,13 @@ const useGameStore = create<IStore>()(
             }
           }
         }
+        // Creating black checkers
         for (let row = 7; row > 4; row--) {
           for (let cell = 0; cell < 8; cell++) {
-            if (get().board[row][cell] === "black") {
+            if (get().board[row][cell].color === "black") {
+              const boardClone = structuredClone(get().board);
+              boardClone[row][cell].isEmpty = false;
+              set({ board: boardClone });
               const checker: Checker = {
                 color: "white",
                 id: Math.floor(Math.random() * 100000),
@@ -87,6 +94,7 @@ const useGameStore = create<IStore>()(
       handleMove: (id, top, left) => {
         const res = structuredClone(get().checkers);
         const checker = res.find((checker) => checker.id === id);
+        // Changing checker's coordinats
         if (checker && !checker.isQueen) {
           if (
             ((Math.round(top / 50) === 1 && checker.color === "white") ||
@@ -121,12 +129,42 @@ const useGameStore = create<IStore>()(
             }
           }
         }
+        // Transforming into queen (if necessary)
+        if (checker?.color === "white" && checker.coordinats.row === 0) {
+          checker.isQueen = true;
+        } else if (checker?.color === "black" && checker.coordinats.row === 7) {
+          checker.isQueen = true;
+        }
+        // Updating game state
         if (
           checker &&
-          get().board[checker?.coordinats.row][checker?.coordinats.cell] ===
-            "black"
+          get().board[checker.coordinats.row][checker.coordinats.cell].color ===
+            "black" &&
+          get().board[checker.coordinats.row][checker.coordinats.cell]
+            .isEmpty &&
+          get().turn === checker.color
         ) {
+          const boardClone = structuredClone(get().board);
+          boardClone[checker.coordinats.row][checker.coordinats.cell].isEmpty =
+            false;
+          const unmodifiedChecker = get().checkers.find(
+            (item) => item.id === checker.id
+          );
+          if (unmodifiedChecker) {
+            boardClone[unmodifiedChecker.coordinats.row][
+              unmodifiedChecker.coordinats.cell
+            ].isEmpty = true;
+          }
           set({ checkers: res });
+          set({ board: boardClone });
+
+          // Changing turn
+
+          if (checker.color === "white") {
+            set({ turn: "black" });
+          } else {
+            set({ turn: "white" });
+          }
         }
       },
     }))

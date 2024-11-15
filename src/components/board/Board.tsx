@@ -28,7 +28,9 @@ export default function Board() {
                   return (
                     <span
                       className={`${
-                        cell === "black" ? styles.blackCell : styles.whiteCell
+                        cell.color === "black"
+                          ? styles.blackCell
+                          : styles.whiteCell
                       } ${styles.cell}`}
                       key={cellIndex}
                     >

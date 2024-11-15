@@ -1,5 +1,16 @@
 import { z } from "zod";
 
-const Board = z.array(z.array(z.enum(["black", "white"])).min(8)).min(8);
+const Board = z
+  .array(
+    z
+      .array(
+        z.object({
+          color: z.enum(["black", "white"]),
+          isEmpty: z.boolean().default(true),
+        })
+      )
+      .min(8)
+  )
+  .min(8);
 
 export type Board = z.infer<typeof Board>;
