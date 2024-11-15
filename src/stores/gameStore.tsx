@@ -46,8 +46,8 @@ const useGameStore = create<IStore>()(
             }
           }
         }
+
         set({ board: res });
-        set({ turn: "white" });
 
         // Creating white Checkers
 
@@ -59,8 +59,8 @@ const useGameStore = create<IStore>()(
               set({ board: boardClone });
               const checker: Checker = {
                 color: "black",
-                id: Math.floor(Math.random() * 100000),
                 isQueen: false,
+                id: Math.floor(Math.random() * 1000000),
                 coordinats: {
                   row: row,
                   cell: cell,
@@ -79,8 +79,8 @@ const useGameStore = create<IStore>()(
               set({ board: boardClone });
               const checker: Checker = {
                 color: "white",
-                id: Math.floor(Math.random() * 100000),
                 isQueen: false,
+                id: Math.floor(Math.random() * 1000000),
                 coordinats: {
                   row: row,
                   cell: cell,
@@ -90,6 +90,10 @@ const useGameStore = create<IStore>()(
             }
           }
         }
+
+        // Starting game
+        set({ isOngoing: true });
+        set({ turn: "white" });
       },
       handleMove: (id, top, left) => {
         const res = structuredClone(get().checkers);
@@ -135,7 +139,9 @@ const useGameStore = create<IStore>()(
         } else if (checker?.color === "black" && checker.coordinats.row === 7) {
           checker.isQueen = true;
         }
+
         // Updating game state
+
         if (
           checker &&
           get().board[checker.coordinats.row][checker.coordinats.cell].color ===
