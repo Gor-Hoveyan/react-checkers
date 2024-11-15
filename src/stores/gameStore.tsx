@@ -10,11 +10,18 @@ interface IStore {
   board: Board;
   checkers: Checker[];
   turn: "white" | "black" | null;
+  draggedChecker: number | null;
+  choosenCell: {
+    row: number | null;
+    cell: number | null;
+  };
   handleMode: (mode: "easy" | "medium" | "hard" | null) => void;
   handleIsOngoing: (isOngoing: boolean) => void;
   handleTurn: (turn: "white" | "black" | null) => void;
   startGame: () => void;
-  handleMove: (id: number, top: number, left: number) => void;
+  handleMove: (id: number, row: number, cell: number) => void;
+  handleDraggedChecker: (id: number | null) => void;
+  handleChoosenCell: (row: number, cell: number) => void;
 }
 
 const useGameStore = create<IStore>()(
@@ -25,6 +32,8 @@ const useGameStore = create<IStore>()(
       board: [[]],
       checkers: [],
       turn: null,
+      draggedChecker: null,
+      choosenCell: { row: null, cell: null },
       handleMode: (mode) => {
         set({ mode: mode });
       },
@@ -95,72 +104,16 @@ const useGameStore = create<IStore>()(
         set({ isOngoing: true });
         set({ turn: "white" });
       },
-      handleMove: (id, top, left) => {
+      handleMove: (id, row, cell) => {
         const res = structuredClone(get().checkers);
         const checker = res.find((checker) => checker.id === id);
-        // Changing checker's coordinats
-        if (checker && !checker.isQueen) {
-          if (
-            ((Math.round(top / 50) === 1 && checker.color === "white") ||
-              (Math.round(top / 50) === -1 && checker.color === "black")) &&
-            (Math.round(left / 50) === 1 || Math.round(left / 50) === -1)
-          ) {
-            if (checker.color === "white") {
-              if (
-                get().board[checker.coordinats.row - 1][checker.coordinats.cell]
-              ) {
-                checker.coordinats.row--;
-              }
-            } else if (checker.color === "black") {
-              if (
-                get().board[checker.coordinats.row + 1][checker.coordinats.cell]
-              ) {
-                checker.coordinats.row++;
-              }
-            }
-            if (Math.round(left / 50) === -1) {
-              if (
-                get().board[checker.coordinats.row][checker.coordinats.cell + 1]
-              ) {
-                checker.coordinats.cell++;
-              }
-            } else {
-              if (
-                get().board[checker.coordinats.row][checker.coordinats.cell - 1]
-              ) {
-                checker.coordinats.cell--;
-              }
-            }
-          }
-        }
-        // Transforming into queen (if necessary)
-        if (checker?.color === "white" && checker.coordinats.row === 0) {
-          checker.isQueen = true;
-        } else if (checker?.color === "black" && checker.coordinats.row === 7) {
-          checker.isQueen = true;
-        }
-
-        // Updating game state
-
-        if (
-          checker &&
-          get().board[checker.coordinats.row][checker.coordinats.cell].color ===
-            "black" &&
-          get().board[checker.coordinats.row][checker.coordinats.cell]
-            .isEmpty &&
-          get().turn === checker.color
-        ) {
+        if (checker) {
           const boardClone = structuredClone(get().board);
           boardClone[checker.coordinats.row][checker.coordinats.cell].isEmpty =
-            false;
-          const unmodifiedChecker = get().checkers.find(
-            (item) => item.id === checker.id
-          );
-          if (unmodifiedChecker) {
-            boardClone[unmodifiedChecker.coordinats.row][
-              unmodifiedChecker.coordinats.cell
-            ].isEmpty = true;
-          }
+            true;
+          checker.coordinats.row = row;
+          checker.coordinats.cell = cell;
+
           set({ checkers: res });
           set({ board: boardClone });
 
@@ -171,6 +124,32 @@ const useGameStore = create<IStore>()(
           } else {
             set({ turn: "white" });
           }
+        }
+
+        // Transforming into queen (if necessary)
+        if (checker?.color === "white" && checker.coordinats.row === 0) {
+          checker.isQueen = true;
+        } else if (checker?.color === "black" && checker.coordinats.row === 7) {
+          checker.isQueen = true;
+        }
+
+        // Updating game state
+      },
+      handleDraggedChecker: (id) => {
+        if (id) {
+          set({ draggedChecker: id });
+        } else {
+          set({ draggedChecker: null });
+        }
+      },
+      handleChoosenCell: (row, cell) => {
+        if (row >= 0 && cell >= 0) {
+          set({
+            choosenCell: {
+              row,
+              cell,
+            },
+          });
         }
       },
     }))
