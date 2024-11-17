@@ -16,6 +16,9 @@
 .row {
   display: flex;
 }
+.highlightedCell {
+  background: rgb(0, 255, 0, 0.5) !important;
+}
 .blackCell {
   background: rgb(122, 58, 12);
 }

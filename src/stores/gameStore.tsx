@@ -3,6 +3,7 @@ import { devtools } from "zustand/middleware";
 import { immer } from "zustand/middleware/immer";
 import { Board } from "../types/board";
 import { Checker } from "../types/checker";
+import { Coordinates } from "../types/coordinates";
 
 interface IStore {
   mode: "easy" | "medium" | "hard" | null;
@@ -15,13 +16,16 @@ interface IStore {
     row: number | null;
     cell: number | null;
   };
+  mustTake: Coordinates[] | null;
   handleMode: (mode: "easy" | "medium" | "hard" | null) => void;
   handleIsOngoing: (isOngoing: boolean) => void;
   handleTurn: (turn: "white" | "black" | null) => void;
   startGame: () => void;
   handleMove: (id: number, row: number, cell: number) => void;
+  handleTake: (id: number, row: number, cell: number) => void;
   handleDraggedChecker: (id: number | null) => void;
   handleChoosenCell: (row: number, cell: number) => void;
+  handleMustTake: (coordinates: Coordinates[] | null) => void;
 }
 
 const useGameStore = create<IStore>()(
@@ -34,6 +38,7 @@ const useGameStore = create<IStore>()(
       turn: null,
       draggedChecker: null,
       choosenCell: { row: null, cell: null },
+      mustTake: null,
       handleMode: (mode) => {
         set({ mode: mode });
       },
@@ -49,7 +54,11 @@ const useGameStore = create<IStore>()(
         for (let row = 0; row < 8; row++) {
           res[row] = [];
           for (let cell = 0; cell < 8; cell++) {
-            res[row][cell] = { isEmpty: true, color: "white" };
+            res[row][cell] = {
+              isEmpty: true,
+              color: "white",
+              isHighlighted: false,
+            };
             if ((row + cell) % 2 === 1) {
               res[row][cell].color = "black";
             }
@@ -70,7 +79,7 @@ const useGameStore = create<IStore>()(
                 color: "black",
                 isQueen: false,
                 id: Math.floor(Math.random() * 1000000),
-                coordinats: {
+                coordinates: {
                   row: row,
                   cell: cell,
                 },
@@ -90,7 +99,7 @@ const useGameStore = create<IStore>()(
                 color: "white",
                 isQueen: false,
                 id: Math.floor(Math.random() * 1000000),
-                coordinats: {
+                coordinates: {
                   row: row,
                   cell: cell,
                 },
@@ -105,35 +114,85 @@ const useGameStore = create<IStore>()(
         set({ turn: "white" });
       },
       handleMove: (id, row, cell) => {
-        const res = structuredClone(get().checkers);
-        const checker = res.find((checker) => checker.id === id);
-        if (checker) {
-          const boardClone = structuredClone(get().board);
-          boardClone[checker.coordinats.row][checker.coordinats.cell].isEmpty =
-            true;
-          checker.coordinats.row = row;
-          checker.coordinats.cell = cell;
+        if (!get().mustTake?.length) {
+          const res = structuredClone(get().checkers);
+          const checker = res.find((checker) => checker.id === id);
+          if (checker) {
+            const boardClone = structuredClone(get().board);
+            boardClone[checker.coordinates.row][
+              checker.coordinates.cell
+            ].isEmpty = true;
+            boardClone[row][cell].isEmpty = false;
+            checker.coordinates.row = row;
+            checker.coordinates.cell = cell;
 
-          set({ checkers: res });
-          set({ board: boardClone });
+            // Update game state
 
-          // Changing turn
+            set({ checkers: res });
+            set({ board: boardClone });
+            set({ draggedChecker: null });
 
-          if (checker.color === "white") {
-            set({ turn: "black" });
-          } else {
-            set({ turn: "white" });
+            // Changing turn
+
+            if (checker.color === "white") {
+              set({ turn: "black" });
+            } else {
+              set({ turn: "white" });
+            }
+          }
+
+          // Transforming into queen (if necessary)
+          if (checker?.color === "white" && checker.coordinates.row === 0) {
+            checker.isQueen = true;
+          } else if (
+            checker?.color === "black" &&
+            checker.coordinates.row === 7
+          ) {
+            checker.isQueen = true;
           }
         }
+      },
+      handleTake: (id, row, cell) => {
+        let checkersClone = structuredClone(get().checkers);
+        const boardClone = structuredClone(get().board);
+        let mustTakeClone = structuredClone(get().mustTake);
+        const checker = checkersClone.find((elem) => elem.id === id);
+        const coordinates = mustTakeClone?.find(
+          (elem) => elem.row === row && elem.cell === cell
+        );
+        if (coordinates.id && checker) {
+          const takenChecker = checkersClone.find(
+            (elem) => elem.id === coordinates.id
+          );
+          if (takenChecker) {
+            boardClone[takenChecker.coordinates.row][
+              takenChecker.coordinates.cell
+            ].isEmpty = true;
+            boardClone[checker.coordinates.row][
+              checker.coordinates.cell
+            ].isEmpty = true;
+            boardClone[row][cell].isEmpty = false;
+            checkersClone = checkersClone.filter(
+              (elem) => elem.id !== coordinates.id
+            );
+            checker.coordinates.row = row;
+            checker.coordinates.cell = cell;
 
-        // Transforming into queen (if necessary)
-        if (checker?.color === "white" && checker.coordinats.row === 0) {
-          checker.isQueen = true;
-        } else if (checker?.color === "black" && checker.coordinats.row === 7) {
-          checker.isQueen = true;
+            mustTakeClone?.map((coord) => {
+              boardClone[coord.row][coord.cell].isHighlighted = false;
+              console.log(boardClone[coord.row][coord.cell].isHighlighted);
+            });
+
+            set({ board: boardClone });
+            set({ checkers: checkersClone });
+            set({ mustTake: null });
+            if (get().turn === "black") {
+              set({ turn: "white" });
+            } else {
+              set({ turn: "black" });
+            }
+          }
         }
-
-        // Updating game state
       },
       handleDraggedChecker: (id) => {
         if (id) {
@@ -151,6 +210,14 @@ const useGameStore = create<IStore>()(
             },
           });
         }
+      },
+      handleMustTake: (coordinates) => {
+        set({ mustTake: coordinates });
+        const boardClone = structuredClone(get().board);
+        coordinates?.map((coord) => {
+          boardClone[coord.row][coord.cell].isHighlighted = true;
+        });
+        set({ board: boardClone });
       },
     }))
   )
