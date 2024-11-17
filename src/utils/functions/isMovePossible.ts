@@ -17,17 +17,17 @@ export default function isMovePossible(
   ) {
     if (
       checker?.color === "white" &&
-      checker.coordinats.row - 1 === row &&
-      (checker.coordinats.cell - 1 === cell ||
-        checker.coordinats.cell + 1 === cell)
+      checker.coordinates.row - 1 === row &&
+      (checker.coordinates.cell - 1 === cell ||
+        checker.coordinates.cell + 1 === cell)
     ) {
       res = true;
     }
     if (
       checker?.color === "black" &&
-      checker.coordinats.row + 1 === row &&
-      (checker.coordinats.cell - 1 === cell ||
-        checker.coordinats.cell + 1 === cell)
+      checker.coordinates.row + 1 === row &&
+      (checker.coordinates.cell - 1 === cell ||
+        checker.coordinates.cell + 1 === cell)
     ) {
       res = true;
     }

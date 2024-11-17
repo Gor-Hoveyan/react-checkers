@@ -7,6 +7,7 @@ const Board = z
         z.object({
           color: z.enum(["black", "white"]),
           isEmpty: z.boolean().default(true),
+          isHighlighted: z.boolean().default(false),
         })
       )
       .min(8)

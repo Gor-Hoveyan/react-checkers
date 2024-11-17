@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import Checker from "../checker/Checker";
 import { Checker as CheckerType } from "../../types/checker";
 import isMovePossible from "../../utils/functions/isMovePossible";
+import isTakingPossible from "../../utils/functions/isTakingPossible";
 
 export default function Board() {
   const board = useGameStore((state) => state.board);
@@ -14,15 +15,22 @@ export default function Board() {
   const turn = useGameStore((state) => state.turn);
   const choosenCell = useGameStore((state) => state.choosenCell);
   const handleChoosenCell = useGameStore((state) => state.handleChoosenCell);
+  const handleMustTake = useGameStore((state) => state.handleMustTake);
+  const mustTake = useGameStore((state) => state.mustTake);
+  const handleTake = useGameStore((state) => state.handleTake);
 
   useEffect(() => {
     startGame();
   }, []);
 
+  useEffect(() => {
+    handleMustTake(isTakingPossible(turn, board, checkers));
+  }, [turn]);
+
   function findChecker(row: number, cell: number): CheckerType | undefined {
     return checkers.find(
       (checker) =>
-        checker.coordinats.row === row && checker.coordinats.cell === cell
+        checker.coordinates.row === row && checker.coordinates.cell === cell
     );
   }
 
@@ -36,15 +44,21 @@ export default function Board() {
       handleChoosenCell(row, cell);
     }
     if (
+      row === checker?.coordinates.row &&
+      cell === checker?.coordinates.cell
+    ) {
+      e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+    } else if (
       checker &&
       isMovePossible(checker, row, cell, turn, board) &&
       turn === checker.color
     ) {
-      e.currentTarget.style.backgroundColor = "green";
+      e.currentTarget.style.backgroundColor = "rgba(0, 255, 0, 0.8)";
     } else {
-      e.currentTarget.style.backgroundColor = "red";
+      e.currentTarget.style.backgroundColor = "rgba(255, 0, 0, 0.8)";
     }
   }
+
   function onDragLeave(
     e: React.DragEvent<HTMLSpanElement>,
     color: "white" | "black"
@@ -58,12 +72,21 @@ export default function Board() {
 
   function onDragEnd() {
     const checker = checkers.find((elem) => elem.id === draggedChecker);
-    if (choosenCell.row && choosenCell.cell) {
+
+    if (choosenCell.row !== null && choosenCell.cell !== null && checker) {
       if (
-        checker &&
-        isMovePossible(checker, choosenCell.row, choosenCell.cell, turn, board)
+        isMovePossible(
+          checker,
+          choosenCell.row,
+          choosenCell.cell,
+          turn,
+          board
+        ) &&
+        !mustTake?.length
       ) {
         handleMove(checker.id, choosenCell.row, choosenCell.cell);
+      } else {
+        handleTake(checker?.id, choosenCell.row, choosenCell.cell);
       }
     }
   }
@@ -81,7 +104,9 @@ export default function Board() {
                         cell.color === "black"
                           ? styles.blackCell
                           : styles.whiteCell
-                      } ${styles.cell}`}
+                      } ${styles.cell} ${
+                        cell.isHighlighted && styles.highlightedCell
+                      }`}
                       key={cellIndex}
                       onDragOver={(e) => onDragOver(e, rowIndex, cellIndex)}
                       onDragLeave={(e) => onDragLeave(e, cell.color)}
