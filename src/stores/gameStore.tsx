@@ -4,6 +4,7 @@ import { immer } from "zustand/middleware/immer";
 import { Board } from "../types/board";
 import { Checker } from "../types/checker";
 import { Coordinates } from "../types/coordinates";
+import { isDoubleTakingPossible } from "../utils/functions/isTakingPossible";
 
 interface IStore {
   mode: "easy" | "medium" | "hard" | null;
@@ -155,12 +156,12 @@ const useGameStore = create<IStore>()(
       handleTake: (id, row, cell) => {
         let checkersClone = structuredClone(get().checkers);
         const boardClone = structuredClone(get().board);
-        let mustTakeClone = structuredClone(get().mustTake);
+        const mustTakeClone = structuredClone(get().mustTake);
         const checker = checkersClone.find((elem) => elem.id === id);
         const coordinates = mustTakeClone?.find(
           (elem) => elem.row === row && elem.cell === cell
         );
-        if (coordinates.id && checker) {
+        if (coordinates && checker) {
           const takenChecker = checkersClone.find(
             (elem) => elem.id === coordinates.id
           );
@@ -180,16 +181,27 @@ const useGameStore = create<IStore>()(
 
             mustTakeClone?.map((coord) => {
               boardClone[coord.row][coord.cell].isHighlighted = false;
-              console.log(boardClone[coord.row][coord.cell].isHighlighted);
             });
 
             set({ board: boardClone });
             set({ checkers: checkersClone });
-            set({ mustTake: null });
-            if (get().turn === "black") {
-              set({ turn: "white" });
-            } else {
-              set({ turn: "black" });
+            set({
+              mustTake: isDoubleTakingPossible(
+                get().turn,
+                boardClone,
+                checkersClone,
+                checker.id
+              ),
+            });
+
+            if (!get().mustTake?.length) {
+              debugger;
+
+              if (get().turn === "black") {
+                set({ turn: "white" });
+              } else {
+                set({ turn: "black" });
+              }
             }
           }
         }

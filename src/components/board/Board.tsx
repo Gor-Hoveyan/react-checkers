@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import Checker from "../checker/Checker";
 import { Checker as CheckerType } from "../../types/checker";
 import isMovePossible from "../../utils/functions/isMovePossible";
-import isTakingPossible from "../../utils/functions/isTakingPossible";
+import { isTakingPossible } from "../../utils/functions/isTakingPossible";
 
 export default function Board() {
   const board = useGameStore((state) => state.board);
@@ -18,6 +18,7 @@ export default function Board() {
   const handleMustTake = useGameStore((state) => state.handleMustTake);
   const mustTake = useGameStore((state) => state.mustTake);
   const handleTake = useGameStore((state) => state.handleTake);
+  const handleTurn = useGameStore((state) => state.handleTurn);
 
   useEffect(() => {
     startGame();
@@ -25,7 +26,7 @@ export default function Board() {
 
   useEffect(() => {
     handleMustTake(isTakingPossible(turn, board, checkers));
-  }, [turn]);
+  }, [turn, checkers.length]);
 
   function findChecker(row: number, cell: number): CheckerType | undefined {
     return checkers.find(
@@ -47,7 +48,7 @@ export default function Board() {
       row === checker?.coordinates.row &&
       cell === checker?.coordinates.cell
     ) {
-      e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.8)";
+      e.currentTarget.style.backgroundColor = "rgba(57, 128, 220)";
     } else if (
       checker &&
       isMovePossible(checker, row, cell, turn, board) &&
