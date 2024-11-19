@@ -1,4 +1,3 @@
-import React from "react";
 import styles from "./GameControls.module.scss";
 import useGameStore from "../../stores/gameStore";
 

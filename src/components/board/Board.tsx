@@ -12,7 +12,6 @@ import getPossibleMoves from "../../utils/functions/queenMoves";
 
 export default function Board() {
   const board = useGameStore((state) => state.board);
-  const startGame = useGameStore((state) => state.startGame);
   const checkers = useGameStore((state) => state.checkers);
   const draggedChecker = useGameStore((state) => state.draggedChecker);
   const handleMove = useGameStore((state) => state.handleMove);
