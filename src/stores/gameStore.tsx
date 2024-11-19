@@ -25,7 +25,7 @@ interface IStore {
   handleMove: (id: number, row: number, cell: number) => void;
   handleTake: (id: number, row: number, cell: number) => void;
   handleDraggedChecker: (id: number | null) => void;
-  handleChoosenCell: (row: number, cell: number) => void;
+  handleChoosenCell: (row: number | null, cell: number | null) => void;
   handleMustTake: (coordinates: Coordinates[] | null) => void;
 }
 
@@ -118,7 +118,7 @@ const useGameStore = create<IStore>()(
         if (!get().mustTake?.length) {
           const res = structuredClone(get().checkers);
           const checker = res.find((checker) => checker.id === id);
-          if (checker) {
+          if (checker && checker.color === get().turn) {
             const boardClone = structuredClone(get().board);
             boardClone[checker.coordinates.row][
               checker.coordinates.cell
@@ -143,6 +143,7 @@ const useGameStore = create<IStore>()(
           }
 
           // Transforming into queen (if necessary)
+
           if (checker?.color === "white" && checker.coordinates.row === 0) {
             checker.isQueen = true;
           } else if (
@@ -183,6 +184,17 @@ const useGameStore = create<IStore>()(
               boardClone[coord.row][coord.cell].isHighlighted = false;
             });
 
+            // Transforming into queen (if necessary)
+
+            if (checker?.color === "white" && checker.coordinates.row === 0) {
+              checker.isQueen = true;
+            } else if (
+              checker?.color === "black" &&
+              checker.coordinates.row === 7
+            ) {
+              checker.isQueen = true;
+            }
+
             set({ board: boardClone });
             set({ checkers: checkersClone });
             set({
@@ -195,8 +207,6 @@ const useGameStore = create<IStore>()(
             });
 
             if (!get().mustTake?.length) {
-              debugger;
-
               if (get().turn === "black") {
                 set({ turn: "white" });
               } else {
@@ -214,13 +224,15 @@ const useGameStore = create<IStore>()(
         }
       },
       handleChoosenCell: (row, cell) => {
-        if (row >= 0 && cell >= 0) {
-          set({
-            choosenCell: {
-              row,
-              cell,
-            },
-          });
+        if (row !== null && cell !== null) {
+          if (row >= 0 && cell >= 0) {
+            set({
+              choosenCell: {
+                row,
+                cell,
+              },
+            });
+          }
         }
       },
       handleMustTake: (coordinates) => {
