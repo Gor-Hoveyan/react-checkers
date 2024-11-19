@@ -1,6 +1,9 @@
 .table {
   width: 400px;
   height: 400px;
+  background: #954520;
+  border: 15px solid #954520;
+  border-radius: 10px;
 }
 .cell {
   width: 50px;
@@ -24,8 +27,4 @@
 }
 .whiteCell {
   background: rgb(194, 131, 87);
-}
-.table {
-  border: 15px solid #954520;
-  border-radius: 10px;
 }

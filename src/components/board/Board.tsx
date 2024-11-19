@@ -24,10 +24,6 @@ export default function Board() {
   const handleTake = useGameStore((state) => state.handleTake);
 
   useEffect(() => {
-    startGame();
-  }, []);
-
-  useEffect(() => {
     const arr = [
       ...isTakingPossible(turn, board, checkers),
       ...isQueenTakingPossible(turn, board, checkers),

@@ -1,0 +1,36 @@
+.gameControls {
+  margin-bottom: 20px;
+  text-align: center;
+  display: flex;
+}
+
+.checker {
+  width: 30px;
+  height: 30px;
+  margin-left: 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid gray;
+  cursor: pointer;
+}
+.blackChecker {
+  background-color: black;
+}
+.whiteChecker {
+  background-color: white;
+}
+.checkerLine {
+  width: 20px;
+  height: 20px;
+  border: 1px solid gray;
+  border-radius: 50%;
+}
+.turn {
+  text-align: center;
+  p {
+    display: flex;
+    justify-content: center;
+  }
+}

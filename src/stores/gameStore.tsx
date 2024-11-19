@@ -51,6 +51,9 @@ const useGameStore = create<IStore>()(
       },
       startGame: () => {
         // Creating board
+        set({ board: [[]] });
+        set({ checkers: [] });
+        set({ turn: "white" });
         const res: Board = [];
         for (let row = 0; row < 8; row++) {
           res[row] = [];
